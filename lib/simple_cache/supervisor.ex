@@ -8,12 +8,12 @@ defmodule SimpleCache.Supervisor do
   end
 
   def start_child(value, lease_time) do
-    Supervisor.start_child __MODULE__, [value, lease_time]
+    Supervisor.start_child @server, [value, lease_time]
   end
 
   def init([]) do
     children = [
-      worker(SimpleCache.Element, restart: :temporary, shutdown: :brutal_kill)
+      worker(SimpleCache.Element, [], restart: :temporary, shutdown: :brutal_kill)
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

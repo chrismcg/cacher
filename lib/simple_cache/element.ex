@@ -11,7 +11,7 @@ defmodule SimpleCache.Element do
   ## API
 
   def start_link(value, lease_time) do
-    GenServer.start_link @server, [value, lease_time], []
+    GenServer.start_link __MODULE__, [value, lease_time], []
   end
 
   def create(value, lease_time) do
