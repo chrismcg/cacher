@@ -13,7 +13,7 @@ defmodule SimpleCache.Supervisor do
 
   def init([]) do
     children = [
-      worker(Element, restart: :temporary, shutdown: :brutal_kill)
+      worker(SimpleCache.Element, restart: :temporary, shutdown: :brutal_kill)
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
