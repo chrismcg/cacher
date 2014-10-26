@@ -14,6 +14,7 @@ defmodule SimpleCache do
       { :error, _ } ->
         { :ok, pid } = SimpleCache.Element.create(value)
         SimpleCache.Store.insert(key, pid)
+        SimpleCache.Event.create(key, value)
     end
   end
 

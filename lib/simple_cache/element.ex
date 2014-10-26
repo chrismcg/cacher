@@ -15,7 +15,7 @@ defmodule SimpleCache.Element do
   end
 
   def create(value, lease_time) do
-    SimpleCache.Supervisor.start_child(value, lease_time)
+    SimpleCache.ElementSupervisor.start_child(value, lease_time)
   end
   def create(value), do: create(value, @default_lease_time)
 

@@ -1,5 +1,5 @@
 defmodule SimpleCache.Event do
-  def start_link, do: GenEvent.start_link(__MODULE__)
+  def start_link, do: GenEvent.start_link(name: __MODULE__)
 
   def add_handler(handler, args) do
     GenEvent.add_handler(__MODULE__, handler, args)
