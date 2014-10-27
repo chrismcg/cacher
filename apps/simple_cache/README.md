@@ -1,4 +1,4 @@
-Cacher
-======
+SimpleCache
+===========
 
 ** TODO: Add description **
