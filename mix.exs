@@ -26,6 +26,8 @@ defmodule SimpleCache.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    []
+    [
+      {:amnesia, github: "meh/amnesia"}
+    ]
   end
 end
