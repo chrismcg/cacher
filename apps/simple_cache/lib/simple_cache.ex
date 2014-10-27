@@ -1,12 +1,18 @@
 defmodule SimpleCache do
   use Application
 
+  @wait_for_resources 2500
+
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
   def start(_type, _args) do
     if Application.get_env :simple_cache, :ensure_contact do
       :ok = ensure_contact
     end
+    ResourceDiscovery.add_local_resource(:simple_cache, node)
+    ResourceDiscovery.add_target_resource_type(:simple_cache)
+    ResourceDiscovery.trade_resources
+    :timer.sleep @wait_for_resources
     SimpleCache.Store.init
     SimpleCache.Supervisor.start_link
   end
