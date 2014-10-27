@@ -5,8 +5,12 @@ defmodule SimpleCache.Store do
     Amnesia.stop
     Amnesia.Schema.destroy [node]
     Amnesia.start
-    { :ok, cache_nodes } = ResourceDiscovery.fetch_resources(:simple_cache)
-    dynamic_db_init(List.delete(cache_nodes, node))
+    if Application.get_env(:simple_cache, :ensure_contact) do
+      { :ok, cache_nodes } = ResourceDiscovery.fetch_resources(:simple_cache)
+      dynamic_db_init(List.delete(cache_nodes, node))
+    else
+      dynamic_db_init([])
+    end
     :ok
   end
 

@@ -6,24 +6,27 @@ defmodule SimpleCache do
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
   def start(_type, _args) do
-    if Application.get_env :simple_cache, :ensure_contact do
+    if Application.get_env(:simple_cache, :ensure_contact) do
       :ok = ensure_contact
+      ResourceDiscovery.add_local_resource(:simple_cache, node)
+      ResourceDiscovery.add_target_resource_type(:simple_cache)
+      ResourceDiscovery.trade_resources
+      :timer.sleep @wait_for_resources
     end
-    ResourceDiscovery.add_local_resource(:simple_cache, node)
-    ResourceDiscovery.add_target_resource_type(:simple_cache)
-    ResourceDiscovery.trade_resources
-    :timer.sleep @wait_for_resources
     SimpleCache.Store.init
     SimpleCache.Supervisor.start_link
   end
 
   def insert(key, value) do
     case SimpleCache.Store.lookup(key) do
-      { :ok, pid } -> SimpleCache.Element.replace(pid, value)
+      { :ok, pid } ->
+        SimpleCache.Element.replace(pid, value)
+        { :ok, [key, value] }
       { :error, _ } ->
         { :ok, pid } = SimpleCache.Element.create(value)
         SimpleCache.Store.insert(key, pid)
         SimpleCache.Event.create(key, value)
+        { :ok, [key, value] }
     end
   end
 
@@ -39,8 +42,10 @@ defmodule SimpleCache do
 
   def delete(key) do
     case SimpleCache.Store.lookup(key) do
-      { :ok, pid } -> SimpleCache.Element.delete(pid)
-      { :error, _reason } -> :ok
+      { :ok, pid } ->
+        SimpleCache.Element.delete(pid)
+        { :ok, key }
+      { :error, _reason } -> { :ok, key }
     end
   end
 
