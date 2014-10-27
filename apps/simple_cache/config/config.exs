@@ -21,7 +21,7 @@ use Mix.Config
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
 #
-config :simple_cache, :ensure_contact, :true
+config :simple_cache, :ensure_contact, :false
 
 # config :logger, :handle_sasl_reports, true
 

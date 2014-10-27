@@ -14,8 +14,11 @@ defmodule SimpleCache.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:logger, :resource_discovery],
-     mod: {SimpleCache, []}]
+    [
+      applications: [:logger, :resource_discovery],
+      included_applications: [:amnesia],
+      mod: {SimpleCache, []}
+    ]
   end
 
   # Dependencies can be Hex packages:
@@ -30,7 +33,8 @@ defmodule SimpleCache.Mixfile do
   defp deps do
     [
       {:amnesia, github: "meh/amnesia"},
-      {:resource_discovery, in_umbrella: true}
+      {:resource_discovery, in_umbrella: true},
+      {:exrm, "~> 0.14.11"}
     ]
   end
 end
