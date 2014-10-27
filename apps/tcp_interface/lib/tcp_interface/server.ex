@@ -33,7 +33,18 @@ defmodule TcpInterface.Server do
   end
 
   defp handle_data(socket, raw_data, state) do
-    :gen_tcp.send(socket, raw_data)
+    try do
+      valid_commands = Enum.join([:insert, :lookup, :delete], "|")
+      parser_regex = ~r/(?<command>#{valid_commands})(?<args>\[.*\])/
+      %{ "command" => command, "args" => raw_args } = Regex.named_captures(parser_regex, List.to_string(raw_data))
+      # !!!!!!!!!!!!!!! Evaling something coming in from the outside, must
+      # !!!!!!!!!!!!!!! be a better way with elixir
+      { args, _ } = Code.eval_string(raw_args)
+      { :ok, result } = apply(SimpleCache, String.to_atom(command), args)
+      :gen_tcp.send(socket, "OK:#{inspect result}\r\n")
+    rescue
+      e -> :gen_tcp.send(socket, "ERROR:#{e.message}\r\n")
+    end
     state
   end
 end

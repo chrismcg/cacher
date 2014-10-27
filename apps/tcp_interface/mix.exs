@@ -34,6 +34,8 @@ defmodule TcpInterface.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    []
+    [
+      { :simple_cache, in_umbrella: true }
+    ]
   end
 end
