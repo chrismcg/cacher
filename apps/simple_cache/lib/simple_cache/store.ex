@@ -15,7 +15,7 @@ defmodule SimpleCache.Store do
 
   def lookup(key) do
     case KeyToPid.read!(key) do
-      %KeyToPid{key: key, pid: pid} ->
+      %KeyToPid{key: _key, pid: pid} ->
         if pid_alive?(pid) do
           { :ok, pid }
         else
