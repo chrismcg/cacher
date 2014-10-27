@@ -24,7 +24,7 @@ defmodule SimpleCache do
       { :ok, value } = SimpleCache.Element.fetch(pid)
       { :ok, value }
     rescue
-      _e -> { :error, :not_found }
+      _e in MatchError -> { :error, :not_found }
     end
   end
 

@@ -1,21 +1,40 @@
 defmodule SimpleCache.Store do
-  @table_id __MODULE__
+  alias SimpleCache.Database.KeyToPid
 
   def init do
-    :ets.new(@table_id, [:public, :named_table])
+    Amnesia.start
+    SimpleCache.Database.create ram: [node]
+    SimpleCache.Database.wait
     :ok
   end
 
-  def insert(key, pid), do: :ets.insert(@table_id, { key, pid })
+  def insert(key, pid) do
+    %KeyToPid{key: key, pid: pid}
+    |> KeyToPid.write!
+  end
 
   def lookup(key) do
-    case :ets.lookup(@table_id, key) do
-      [{_key, pid}] -> { :ok, pid }
-      []           -> { :error, :not_found }
+    case KeyToPid.read!(key) do
+      %KeyToPid{key: key, pid: pid} ->
+        if pid_alive?(pid) do
+          { :ok, pid }
+        else
+          { :error, :not_found }
+        end
+
+      _ -> { :error, :not_found }
     end
   end
 
   def delete(pid) do
-    :ets.match_delete(@table_id, { '_', pid })
+    case KeyToPid.read_at! pid, :pid do
+      [%KeyToPid{} = record] -> KeyToPid.delete!(record)
+      _ -> :ok
+    end
+  end
+
+  defp pid_alive?(pid) when node(pid) === node, do: Process.alive?(pid)
+  defp pid_alive?(pid) do
+    Enum.member?(Node.list, node) and (:rpc.call(node(pid), Process, :alive?, [pid]) === true)
   end
 end
