@@ -27,6 +27,6 @@ defmodule ResourceDiscoveryTest do
     assert :ok = ResourceDiscovery.add_local_resource(:test, self)
     assert :ok = ResourceDiscovery.trade_resources
     assert_receive :resources_traded
-    assert { :ok, [self] } == ResourceDiscovery.fetch_resources(:test)
+    assert { :ok, Set.put(HashSet.new, self) } == ResourceDiscovery.fetch_resources(:test)
   end
 end

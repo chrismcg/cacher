@@ -3,7 +3,7 @@ defmodule ResourceDiscovery.Store do
   require Logger
 
   defmodule State do
-    defstruct target_resource_types: [], local_resource_tuples: %{}, found_resource_tuples: %{}
+    defstruct target_resource_types: HashSet.new, local_resource_tuples: %{}, found_resource_tuples: %{}
   end
 
   def start_link do
@@ -21,8 +21,7 @@ defmodule ResourceDiscovery.Store do
   end
 
   def handle_cast({:add_target_resource_type, type}, state) do
-    target_types = state.target_resource_types
-    new_target_types = [type | List.delete(target_types, type)]
+    new_target_types = Set.put(state.target_resource_types, type)
     { :noreply, %{state | target_resource_types: new_target_types } }
   end
 
@@ -68,16 +67,15 @@ defmodule ResourceDiscovery.Store do
 
   defp add_resource(type, resource, resource_tuples) do
     case Map.fetch(resource_tuples, type) do
-      { :ok, resource_list } ->
-        new_list = [resource | List.delete(resource_list, resource)]
-        Map.put(resource_tuples, type, new_list)
+      { :ok, resources } ->
+        Map.put(resource_tuples, type, Set.put(resources, resource))
       :error ->
-        Map.put(resource_tuples, type, [resource])
+        Map.put(resource_tuples, type, Set.put(HashSet.new, resource))
     end
   end
 
   defp resources_for_type(types, resource_tuples) do
-    List.foldl types, [], fn(type, acc) ->
+    Enum.reduce types, [], fn(type, acc) ->
       case Map.fetch(resource_tuples, type) do
         {:ok, list} -> (for instance <- list, do: {type, instance}) ++ acc
         :error -> acc
