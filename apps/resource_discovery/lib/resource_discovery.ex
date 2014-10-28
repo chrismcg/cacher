@@ -5,7 +5,8 @@ defmodule ResourceDiscovery do
     import Supervisor.Spec
     children = [
       worker(ResourceDiscovery.Store, []),
-      worker(ResourceDiscovery.Pinger, [])
+      worker(ResourceDiscovery.Pinger, []),
+      worker(ResourceDiscovery.Event, [])
     ]
     Supervisor.start_link children, strategy: :one_for_one
   end

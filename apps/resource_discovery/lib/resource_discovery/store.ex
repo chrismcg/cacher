@@ -1,5 +1,6 @@
 defmodule ResourceDiscovery.Store do
   use GenServer
+  require Logger
 
   defmodule State do
     defstruct target_resource_types: [], local_resource_tuples: %{}, found_resource_tuples: %{}
@@ -14,6 +15,8 @@ defmodule ResourceDiscovery.Store do
   end
 
   def handle_call({:fetch_resources, type}, _from, state) do
+    Logger.debug "handle_call:fetch_resources: #{inspect type}"
+    Logger.debug inspect(state)
     { :reply, Map.fetch(state.found_resource_tuples, type), state }
   end
 
@@ -24,12 +27,14 @@ defmodule ResourceDiscovery.Store do
   end
 
   def handle_cast({:add_local_resource, {type, instance}}, state) do
-    resource_tuples = state.local_resource_tuples
-    new_resource_tuples = add_resource(type, instance, resource_tuples)
+    Logger.debug "handle_cast:add_local_resource"
+    new_resource_tuples = add_resource(type, instance, state.local_resource_tuples)
+    Logger.debug inspect(new_resource_tuples)
     { :noreply, %{state | local_resource_tuples: new_resource_tuples } }
   end
 
   def handle_cast(:trade_resources, state) do
+    Logger.debug "handle_cast:trade_resources"
     resource_tuples = state.local_resource_tuples
     nodes = [Node.self | Node.list]
     Enum.each nodes, fn node ->
@@ -39,18 +44,20 @@ defmodule ResourceDiscovery.Store do
   end
 
   def handle_cast({:trade_resources, {reply_to, remotes}},
-     %State{
-       local_resource_tuples: locals,
-       target_resource_types: target_types,
-       found_resource_tuples: old_found
-     } = state) do
+    %State{
+      local_resource_tuples: locals,
+      target_resource_types: target_types,
+      found_resource_tuples: old_found
+    } = state) do
 
+    Logger.debug "handle_cast:trade_resources reply"
     filtered_remotes = resources_for_type(target_types, remotes)
     new_found = add_resources(filtered_remotes, old_found)
     case ReplyTo do
       :noreply -> :ok
       _ -> GenServer.cast({__MODULE__, reply_to}, { :trade_resources, {:noreply, locals}})
     end
+    ResourceDiscovery.Event.resources_traded
     { :noreply, %{state | found_resource_tuples: new_found} }
   end
 
