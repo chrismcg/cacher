@@ -52,7 +52,7 @@ defmodule ResourceDiscovery.Store do
     Logger.debug "handle_cast:trade_resources reply"
     filtered_remotes = resources_for_type(target_types, remotes)
     new_found = add_resources(filtered_remotes, old_found)
-    case ReplyTo do
+    case reply_to do
       :noreply -> :ok
       _ -> GenServer.cast({__MODULE__, reply_to}, { :trade_resources, {:noreply, locals}})
     end
