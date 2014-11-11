@@ -59,7 +59,6 @@ defmodule SimpleCache.Store do
     case :mnesia.change_config(:extra_db_nodes, [new_node]) do
       { :ok, [new_node] } ->
         Amnesia.Table.add_copy(:schema, node(), :memory)
-        Amnesia.Table.add_copy(SimpleCache.Database, node(), :memory)
         Amnesia.Table.add_copy(KeyToPid, node(), :memory)
         Amnesia.Table.wait(:mnesia.system_info(:tables), @wait_for_tables)
       _ -> add_extra_nodes(tail)
