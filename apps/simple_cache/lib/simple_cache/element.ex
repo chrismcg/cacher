@@ -17,13 +17,14 @@ defmodule SimpleCache.Element do
   def create(value, lease_time) do
     SimpleCache.ElementSupervisor.start_child(value, lease_time)
   end
+
   def create(value), do: create(value, @default_lease_time)
 
   def fetch(pid), do: GenServer.call(pid, :fetch)
 
   def replace(pid, value), do: GenServer.cast(pid, { :replace, value })
 
-  def delete(pid), do: GenServer.call(pid, :delete)
+  def delete(pid), do: GenServer.cast(pid, :delete)
 
   ## Callbacks
 
@@ -52,7 +53,7 @@ defmodule SimpleCache.Element do
     { :reply, { :ok, value }, state, time_left(start_time, lease_time) }
   end
 
-  def handle_call(:delete, _from, state), do: { :stop, :normal, :ok, state }
+  def handle_cast(:delete, state), do: { :stop, :normal, state }
 
   def handle_cast({:replace, value}, %State{start_time: start_time, lease_time: lease_time} = state) do
     { :noreply, %{state | value: value}, time_left(start_time, lease_time) }
